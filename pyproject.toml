@@ -28,3 +28,8 @@ packages = ["src"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (end-to-end smoke tests)",
+]
