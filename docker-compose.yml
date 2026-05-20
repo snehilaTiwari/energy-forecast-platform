@@ -1,0 +1,39 @@
+services:
+  mlflow-server:
+    image: python:3.12-slim
+    command: >
+      bash -c "pip install mlflow && mlflow server
+      --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlruns"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlruns
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_URI=http://mlflow-server:5000
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - mlflow-server
+
+  monitor:
+    build: .
+    command: python -m src.monitoring.drift
+    environment:
+      - MLFLOW_URI=http://mlflow-server:5000
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    depends_on:
+      - mlflow-server
+    profiles:
+      - monitor
+
+volumes:
+  mlflow-data:
