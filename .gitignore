@@ -1,0 +1,11 @@
+data/raw/*.txt
+data/raw/*.csv
+data/raw/*.zip
+data/raw/*.parquet
+data/features/
+data/logs/
+mlruns/
+__pycache__/
+*.pyc
+.env
+.venv/
