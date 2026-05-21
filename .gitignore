@@ -5,6 +5,8 @@ data/raw/*.parquet
 data/features/
 data/logs/
 mlruns/
+mlartifacts/
+mlflow.db
 __pycache__/
 *.pyc
 .env
