@@ -46,3 +46,41 @@ def test_build_features_minimum_rows_required():
     df = make_hourly_df(10)
     with pytest.raises(ValueError, match="at least 170"):
         build_features(df)
+
+
+def test_new_lag_features_differ_from_each_other():
+    idx = pd.date_range("2007-01-08 00:00", periods=300, freq="h")
+    values = list(range(300))
+    df = pd.DataFrame({"consumption_kwh": values}, index=idx)
+    result = build_features(df)
+    assert (result["lag_2h"] != result["lag_1h"]).any()
+    assert (result["lag_3h"] != result["lag_2h"]).any()
+    assert (result["lag_48h"] != result["lag_24h"]).any()
+
+
+def test_rolling_range_equals_max_minus_min():
+    df = make_hourly_df(300)
+    result = build_features(df)
+    expected = (result["rolling_max_24h"] - result["rolling_min_24h"]).round(10)
+    actual = result["rolling_range_24h"].round(10)
+    pd.testing.assert_series_equal(actual, expected, check_names=False)
+
+
+def test_hour_x_weekend_is_zero_on_weekday():
+    # 2007-01-08 is a Monday — all rows are weekdays
+    idx = pd.date_range("2007-01-08 00:00", periods=300, freq="h")
+    rng = np.random.default_rng(42)
+    df = pd.DataFrame({"consumption_kwh": rng.uniform(0.2, 5.0, 300)}, index=idx)
+    result = build_features(df)
+    weekday_rows = result[result.index.dayofweek < 5]
+    assert (weekday_rows["hour_x_weekend"] == 0).all()
+
+
+def test_hour_x_weekend_matches_hour_on_weekend():
+    # 2007-01-06 is a Saturday — first 48h are weekend
+    idx = pd.date_range("2007-01-06 00:00", periods=300, freq="h")
+    rng = np.random.default_rng(42)
+    df = pd.DataFrame({"consumption_kwh": rng.uniform(0.2, 5.0, 300)}, index=idx)
+    result = build_features(df)
+    weekend_rows = result[result.index.dayofweek >= 5]
+    assert (weekend_rows["hour_x_weekend"] == weekend_rows.index.hour).all()
