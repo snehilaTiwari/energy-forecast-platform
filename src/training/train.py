@@ -11,8 +11,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolu
 FEATURES_PARQUET = Path("data/features/features.parquet")
 FEATURE_COLS = [
     "lag_1h", "lag_24h", "lag_168h",
+    "lag_2h", "lag_3h", "lag_48h",
     "rolling_mean_24h", "rolling_mean_7d", "rolling_std_24h",
+    "rolling_max_24h", "rolling_min_24h", "rolling_range_24h",
     "hour", "day_of_week", "month", "is_weekend", "is_holiday",
+    "hour_x_weekend",
 ]
 TARGET = "target"
 MODEL_NAME = "EnergyForecast"

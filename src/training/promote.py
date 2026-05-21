@@ -7,14 +7,20 @@ MLFLOW_URI = "http://localhost:5000"
 
 
 def get_production_rmse(client: MlflowClient, model_name: str) -> float | None:
-    versions = client.get_latest_versions(model_name, stages=["Production"])
+    versions = [
+        v for v in client.search_model_versions(f"name='{model_name}'")
+        if v.current_stage == "Production"
+    ]
     if not versions:
         return None
     return float(client.get_run(versions[0].run_id).data.metrics["rmse"])
 
 
 def get_best_challenger_rmse_and_version(client: MlflowClient, model_name: str) -> tuple[str, float] | None:
-    versions = client.get_latest_versions(model_name, stages=["None"])
+    versions = [
+        v for v in client.search_model_versions(f"name='{model_name}'")
+        if v.current_stage == "None"
+    ]
     if not versions:
         return None
     runs = [(v, float(client.get_run(v.run_id).data.metrics["rmse"])) for v in versions]

@@ -17,8 +17,11 @@ PREDICTION_LOG_PATH = Path(os.getenv("PREDICTION_LOG_PATH", "data/logs/predictio
 
 FEATURE_COLS = [
     "lag_1h", "lag_24h", "lag_168h",
+    "lag_2h", "lag_3h", "lag_48h",
     "rolling_mean_24h", "rolling_mean_7d", "rolling_std_24h",
+    "rolling_max_24h", "rolling_min_24h", "rolling_range_24h",
     "hour", "day_of_week", "month", "is_weekend", "is_holiday",
+    "hour_x_weekend",
 ]
 
 _model = None
@@ -49,9 +52,15 @@ class PredictRequest(BaseModel):
     lag_1h: float
     lag_24h: float
     lag_168h: float
+    lag_2h: float
+    lag_3h: float
+    lag_48h: float
     rolling_mean_24h: float
     rolling_mean_7d: float
     rolling_std_24h: float
+    rolling_max_24h: float
+    rolling_min_24h: float
+    rolling_range_24h: float
     periods: int = Field(default=1, ge=1, le=168)
 
 
@@ -78,14 +87,21 @@ def _build_feature_rows(req: PredictRequest) -> pd.DataFrame:
             "lag_1h": req.lag_1h,
             "lag_24h": req.lag_24h,
             "lag_168h": req.lag_168h,
+            "lag_2h": req.lag_2h,
+            "lag_3h": req.lag_3h,
+            "lag_48h": req.lag_48h,
             "rolling_mean_24h": req.rolling_mean_24h,
             "rolling_mean_7d": req.rolling_mean_7d,
             "rolling_std_24h": req.rolling_std_24h,
+            "rolling_max_24h": req.rolling_max_24h,
+            "rolling_min_24h": req.rolling_min_24h,
+            "rolling_range_24h": req.rolling_range_24h,
             "hour": ts.hour,
             "day_of_week": ts.weekday(),
             "month": ts.month,
             "is_weekend": int(ts.weekday() >= 5),
             "is_holiday": 0,
+            "hour_x_weekend": ts.hour * int(ts.weekday() >= 5),
         })
     return pd.DataFrame(rows, columns=FEATURE_COLS)
 
